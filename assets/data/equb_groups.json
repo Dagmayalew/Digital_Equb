@@ -1,0 +1,14 @@
+[
+  {
+    "id": "g1",
+    "name": "የጋብቻ እቁብ",
+    "contributionAmount": 200,
+    "frequency": "ወራዊ"
+  },
+  {
+    "id": "g2",
+    "name": "የቤት እቁብ",
+    "contributionAmount": 500,
+    "frequency": "ሳምንታዊ"
+  }
+]

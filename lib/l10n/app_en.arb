@@ -1,0 +1,18 @@
+{
+  "login": "Login",
+  "phoneOrEmail": "Phone or Email",
+  "password": "Password",
+  "enterPhoneOrEmail": "Please enter your phone or email",
+  "enterPassword": "Please enter your password",
+  "invalidCredentials": "Invalid phone/email or password",
+  "tryAgain": "Please try again",
+  "home": "ዋና ገጽ",
+  "greeting": "ሰላም",
+  "joinEqub": "እቁብ አገባ",
+  "joinedEqubs": "የተቀላቀሉት እቁቦች",
+  "noEqubsJoined": "ምንም እቁብ አልተቀላቀለህም",
+  "by": "በ"
+
+
+
+}

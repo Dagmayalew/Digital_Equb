@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1",
+    "name": "አበበ ብታችሁ",
+    "email": "abebe@example.com",
+    "phone": "+251911111111",
+    "password": "abcdef",
+    "balance": 500.0
+  },
+  {
+    "id": "2",
+    "name": "ቤተሌሄም ገብረማርያም",
+    "email": "betelhem@example.com",
+    "phone": "+251922222222",
+    "password": "123456",
+    "balance": 300.0
+  }
+]

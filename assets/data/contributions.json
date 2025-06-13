@@ -1,0 +1,14 @@
+[
+  {
+    "userId": "1",
+    "groupId": "g1",
+    "amount": 200,
+    "date": "2025-04-05"
+  },
+  {
+    "userId": "2",
+    "groupId": "g1",
+    "amount": 200,
+    "date": "2025-04-05"
+  }
+]
