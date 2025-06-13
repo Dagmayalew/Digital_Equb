@@ -33,7 +33,7 @@ Future<List<Map<String, dynamic>>> loadUsers() async {
 Future<List<Map<String, dynamic>>> loadEqubGroups() async {
   try {
     final String jsonString =
-    await rootBundle.loadString('data/equb_groups.json');
+    await rootBundle.loadString('assets/data/equb_groups.json');
     final List<dynamic> jsonList = json.decode(jsonString);
     return jsonList.map((item) => item as Map<String, dynamic>).toList();
   } catch (e) {
