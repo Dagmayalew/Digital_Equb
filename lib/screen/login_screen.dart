@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:provider/provider.dart';
-import '../l10n/app_localizations.dart';
-import '../notifier/locale_notifier.dart';
 import '../theme/theme_notifier.dart';
 import '../utils/json_loader.dart';
-import '../widgets/language_switcher.dart'; // 👈 Add this import
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,8 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final input = _phoneOrEmailController.text.trim().replaceAll(' ', '');
-    final password = _passwordController.text;
+    final String input = _phoneOrEmailController.text.trim().replaceAll(' ', '');
+    final String password = _passwordController.text;
 
     setState(() {
       _errorMessage = '';
@@ -46,20 +44,21 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (user != null) {
+        // ✅ Navigate to HomeScreen with user data
         Navigator.pushReplacementNamed(
           context,
           HomeScreen.routeName,
-          arguments: user,
+          arguments: user, // 👈 This is the key fix
         );
       } else {
         setState(() {
-          _errorMessage = AppLocalizations.of(context)!.invalidCredentials;
+          _errorMessage = 'የተሳሳተ ፋይሉ ወይም ፒን ኮድ';
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = AppLocalizations.of(context)!.tryAgain;
+        _errorMessage = 'እባክዎ እንደገና ይሞክሩ';
         _isLoading = false;
       });
     }
@@ -68,22 +67,18 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizations.login),
-        actions: const [
-          LanguageSwitcher(), // 🌐 Only appears on login screen
-        ],
-        leading: IconButton(
-          icon: Icon(
-            themeNotifier.currentBrightness == Brightness.dark
+        title: const Text("ግባ"),
+        actions: [
+          IconButton(
+            icon: Icon(themeNotifier.currentBrightness == Brightness.dark
                 ? Icons.wb_sunny
-                : Icons.nightlight,
+                : Icons.nightlight),
+            onPressed: themeNotifier.toggleTheme,
           ),
-          onPressed: themeNotifier.toggleTheme,
-        ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -94,12 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               TextFormField(
                 controller: _phoneOrEmailController,
-                decoration:
-                InputDecoration(labelText: localizations.phoneOrEmail),
+                decoration: const InputDecoration(labelText: "ስልክ ቁጥር ወይም ኢሜል"),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return localizations.enterPhoneOrEmail;
+                    return 'እባክዎ ያስገቡ ፋይሉ ወይም ስልክ ቁጥር';
                   }
                   return null;
                 },
@@ -107,10 +101,10 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(labelText: localizations.password),
+                decoration: const InputDecoration(labelText: "ፓስወርድ"),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return localizations.enterPassword;
+                    return 'እባክዎ ያስገቡ ፒን ኮድ';
                   }
                   return null;
                 },
@@ -119,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
               if (_errorMessage.isNotEmpty)
                 Text(
                   _errorMessage,
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red),
                 ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -128,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 onPressed: _isLoading ? null : _login,
                 child: _isLoading
-                    ? const SizedBox(
+                    ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
@@ -136,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     strokeWidth: 2,
                   ),
                 )
-                    : Text(localizations.login),
+                    : const Text("ግባ"),
               ),
             ],
           ),

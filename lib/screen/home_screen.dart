@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../l10n/app_localizations.dart';
+
+import '../notifier/locale_notifier.dart';
 import '../theme/theme_notifier.dart';
 import 'equb_list_screen.dart';
 import 'login_screen.dart';
@@ -34,18 +35,35 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    final locale = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(locale.home),
+        title: const Text('Home'), // Static title
         actions: [
+          // Theme toggle button
           IconButton(
             icon: Icon(themeNotifier.currentBrightness == Brightness.dark
                 ? Icons.wb_sunny
                 : Icons.nightlight),
             onPressed: themeNotifier.toggleTheme,
           ),
+          // Language toggle button - optional to remove if not needed
+          // Remove if you don't want to toggle language
+          /*
+          IconButton(
+            icon: const Icon(Icons.language),
+            tooltip: 'Switch Language',
+            onPressed: () {
+              final currentLocale = Provider.of<LocaleNotifier>(context, listen: false).locale;
+              if (currentLocale.languageCode == 'en') {
+                Provider.of<LocaleNotifier>(context, listen: false).setLocale(Locale('am'));
+              } else {
+                Provider.of<LocaleNotifier>(context, listen: false).setLocale(Locale('en'));
+              }
+            },
+          ),
+          */
+          // Logout button
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: _logout,
@@ -57,33 +75,35 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Static greeting text
             Text(
-              "${locale.greeting}, ${widget.user['name']}",
+              "Hello, ${widget.user['name']}",
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () async {
-                final result = await Navigator.pushNamed(context, EqubListScreen.routeName);
+                final result = await Navigator.pushNamed(
+                    context, EqubListScreen.routeName);
                 if (result != null) {
                   addJoinedEqub(result as Map<String, dynamic>);
                 }
               },
               icon: const Icon(Icons.group_add),
-              label: Text(locale.joinEqub),
+              label: const Text('Join Equb'), // Static label
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(MediaQuery.of(context).size.width, 50),
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              locale.joinedEqubs,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Text(
+              'Joined Equbs', // Static header
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Expanded(
               child: joinedEqubs.isEmpty
-                  ? Center(child: Text(locale.noEqubsJoined))
+                  ? const Center(child: Text('No Equbs joined'))
                   : ListView.builder(
                 itemCount: joinedEqubs.length,
                 itemBuilder: (context, index) {
@@ -93,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListTile(
                       title: Text(equb['name']),
                       subtitle: Text(
-                        "${equb['contributionAmount']} ${locale.by} ${equb['frequency']}",
+                        "${equb['contributionAmount']} by ${equb['frequency']}",
                       ),
                     ),
                   );
