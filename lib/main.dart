@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Optional, later
-import 'package:updated_digital_equb_new/screen/equb_list_screen.dart';
 
 import 'screen/login_screen.dart';
 import 'screen/home_screen.dart';
+import 'screen/main_screen.dart';
 import 'theme/theme_notifier.dart';
-import 'notifier/user_notifier.dart'; // 👈 Import added here
+import 'notifier/user_notifier.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
-        ChangeNotifierProvider(create: (_) => UserNotifier()), // ✅ Add UserNotifier
+        ChangeNotifierProvider(create: (_) => UserNotifier()),
       ],
       child: const MyApp(),
     ),
@@ -25,30 +24,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeNotifier>(
-      builder: (context, themeNotifier, _) {
-        return MaterialApp(
-          title: 'Equb App',
-          theme: themeNotifier.currentTheme,
-          initialRoute: LoginScreen.routeName,
-          routes: {
-            LoginScreen.routeName: (context) =>  LoginScreen(),
-            HomeScreen.routeName: (context) {
-              final args = ModalRoute.of(context)?.settings.arguments;
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
 
-              if (args is Map<String, dynamic>) {
-                final userNotifier = Provider.of<UserNotifier>(context, listen: false);
-                userNotifier.setUser(args); // ✅ Set user globally
-                return HomeScreen(user: args);
-              } else {
-                return  LoginScreen(); // Fallback
-              }
-            },
-            EqubListScreen.routeName: (context) => const EqubListScreen(),
-          },
-          debugShowCheckedModeBanner: false,
-        );
+    return MaterialApp(
+      title: 'Equb App',
+      theme: themeNotifier.currentTheme,
+      initialRoute: LoginScreen.routeName,
+      routes: {
+        LoginScreen.routeName: (context) => const LoginScreen(),
+        HomeScreen.routeName: (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          if (args is Map<String, dynamic>) {
+            // Set the user in UserNotifier upon successful login
+            final userNotifier = Provider.of<UserNotifier>(context, listen: false);
+            userNotifier.setUser(args);
+            return const HomeScreen();
+          } else {
+            return const LoginScreen(); // Fallback if no user data is passed
+          }
+        },
+        // MainScreen now directly accesses user data from UserNotifier
+        MainScreen.routeName: (context) => const MainScreen(),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

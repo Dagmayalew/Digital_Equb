@@ -8,7 +8,8 @@ plugins {
 android {
     namespace = "com.example.updated_digital_equb_new"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Updated NDK version to resolve compatibility issues with plugins.
+    ndkVersion = "27.0.12077973" // This line has been updated.
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

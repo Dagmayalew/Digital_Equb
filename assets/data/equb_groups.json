@@ -2,13 +2,123 @@
   {
     "id": "g1",
     "name": "የጋብቻ እቁብ",
+    "description": "ለወደፊት የጋብቻ ወጪዎች በጋራ ለመቆጠብ የተቋቋመ።",
     "contributionAmount": 200,
-    "frequency": "ወራዊ"
+    "frequency": "ወራዊ",
+    "numberOfMembers": 25,
+    "startDate": "January 15, 2024",
+    "durationInMonths": 24,
+    "nextPaymentDate": "June 15, 2025",
+    "paymentStatus": "Pending",
+    "members": [
+      {
+        "id": "u1",
+        "name": "Abebe",
+        "hasPaidForCurrentCycle": true,
+        "paymentHistory": ["2024-01-15", "2024-02-15", "2025-06-12"]
+      },
+      {
+        "id": "u2",
+        "name": "Almaz",
+        "hasPaidForCurrentCycle": false,
+        "paymentHistory": ["2024-01-15", "2024-02-15"]
+      },
+      {
+        "id": "u3",
+        "name": "YOU",
+        "hasPaidForCurrentCycle": true,
+        "paymentHistory": ["2025-06-12"]
+      }
+    ]
   },
   {
     "id": "g2",
     "name": "የቤት እቁብ",
+    "description": "ለቤት ማስያዣ ወይም ለግንባታ የሚሆን እቁብ።",
     "contributionAmount": 500,
-    "frequency": "ሳምንታዊ"
+    "frequency": "ሳምንታዊ",
+    "numberOfMembers": 50,
+    "startDate": "March 1, 2024",
+    "durationInMonths": 36,
+    "nextPaymentDate": "June 14, 2025",
+    "paymentStatus": "Overdue",
+    "members": [
+      {
+        "id": "u5",
+        "name": "Bekele",
+        "hasPaidForCurrentCycle": false,
+        "paymentHistory": ["2024-03-01"]
+      },
+      {
+        "id": "u6",
+        "name": "Hirut",
+        "hasPaidForCurrentCycle": false,
+        "paymentHistory": []
+      },
+      {
+        "id": "u3",
+        "name": "YOU",
+        "hasPaidForCurrentCycle": false,
+        "paymentHistory": []
+      }
+    ]
+  },
+  {
+    "id": "g3",
+    "name": "የትምህርት እቁብ",
+    "description": "ለትምህርት ወጪዎች በጋራ ለመቆጠብ የተቋቋመ።",
+    "contributionAmount": 300,
+    "frequency": "ወራዊ",
+    "numberOfMembers": 40,
+    "startDate": "February 10, 2024",
+    "durationInMonths": 12,
+    "nextPaymentDate": "June 10, 2025",
+    "paymentStatus": "Paid",
+    "members": [
+      {
+        "id": "u10",
+        "name": "Mulu",
+        "hasPaidForCurrentCycle": true,
+        "paymentHistory": ["2024-02-10", "2025-06-10"]
+      },
+      {
+        "id": "u11",
+        "name": "Lidya",
+        "hasPaidForCurrentCycle": true,
+        "paymentHistory": ["2024-02-10", "2025-06-10"]
+      },
+      {
+        "id": "u3",
+        "name": "YOU",
+        "hasPaidForCurrentCycle": true,
+        "paymentHistory": ["2025-06-10"]
+      }
+    ]
+  },
+  {
+    "id": "g4",
+    "name": "የመኪና እቁብ",
+    "description": "አዲስ መኪና ለመግዛት የተቋቋመ።",
+    "contributionAmount": 1000,
+    "frequency": "ወራዊ",
+    "numberOfMembers": 30,
+    "startDate": "April 5, 2024",
+    "durationInMonths": 30,
+    "nextPaymentDate": "July 5, 2025",
+    "paymentStatus": "Paid",
+    "members": [
+      {
+        "id": "u20",
+        "name": "Robel",
+        "hasPaidForCurrentCycle": true,
+        "paymentHistory": ["2024-04-05", "2025-06-05"]
+      },
+      {
+        "id": "u3",
+        "name": "YOU",
+        "hasPaidForCurrentCycle": true,
+        "paymentHistory": ["2025-06-05"]
+      }
+    ]
   }
 ]
