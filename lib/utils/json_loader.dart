@@ -16,7 +16,7 @@ Future<List<Map<String, dynamic>>> loadUsers() async {
 
   // 📂 Attempt to load the users.json file
   try {
-    final String jsonString = await rootBundle.loadString('data/users.json');
+    final String jsonString = await rootBundle.loadString('assets/data/users.json');
     final List<dynamic> jsonList = json.decode(jsonString);
 
     if (jsonList.isEmpty) {
