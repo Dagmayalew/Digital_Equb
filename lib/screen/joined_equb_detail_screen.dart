@@ -69,7 +69,7 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
         title: Row(
           children: [
             Icon(Icons.policy_outlined, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 10),
+            const SizedBox(width: 6),
             const Text(
               'Payment Agreement Policy',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -119,7 +119,7 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
           title: Row(
             children: [
               Icon(Icons.check_circle_outline, color: Theme.of(context).colorScheme.secondary),
-              const SizedBox(width: 10),
+              const SizedBox(width: 6),
               const Text(
                 'Confirm Your Contribution',
                 style: TextStyle(fontWeight: FontWeight.bold),
