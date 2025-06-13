@@ -1,5 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:math'; // Required for min function
+
+// Define the PayoutHistoryEntry class
+class PayoutHistoryEntry {
+  final String recipientName;
+  final DateTime cycleDate;
+  final double amount;
+
+  PayoutHistoryEntry({
+    required this.recipientName,
+    required this.cycleDate,
+    required this.amount,
+  });
+}
+
+
+// Assume your EqubMember class is defined similar to this:
+class EqubMember {
+  final String id;
+  final String name;
+  bool hasPaidForCurrentCycle;
+  final List<DateTime> paymentHistory;
+
+  EqubMember({
+    required this.id,
+    required this.name,
+    this.hasPaidForCurrentCycle = false,
+    List<DateTime>? paymentHistory,
+  }) : paymentHistory = paymentHistory ?? [];
+}
 
 class Equb {
   final String id;
@@ -14,6 +44,8 @@ class Equb {
   String equbPaymentStatus; // Only 'Paid' or 'Pending'
   final List<EqubMember> members;
   int currentPayoutRecipientIndex;
+  // 🔥 NEW: List to store payout history
+  final List<PayoutHistoryEntry> payoutHistory;
 
   Equb({
     required this.id,
@@ -23,12 +55,15 @@ class Equb {
     required this.frequency,
     required this.numberOfMembers,
     required this.startDate,
-    required this.durationInMonths,
     required this.nextPaymentDate,
     this.equbPaymentStatus = 'Pending',
     required this.members,
     this.currentPayoutRecipientIndex = 0,
-  });
+    // 🔥 Initialize payoutHistory in the constructor
+    List<PayoutHistoryEntry>? payoutHistory,
+    required this.durationInMonths, // Ensure this is also required
+  }) : payoutHistory = payoutHistory ?? []; // Initialize as an empty list if null
+
 
   factory Equb.fromMap(Map<String, dynamic> data) {
     DateTime parsedStartDate;
@@ -47,6 +82,8 @@ class Equb {
       print('Error parsing nextPaymentDate: $e');
     }
 
+    // In a real application, 'members' and 'payoutHistory' would likely come from 'data' as well.
+    // This is a placeholder for demonstration purposes.
     List<EqubMember> generatedMembers = List.generate(
       data['numberOfMembers'] ?? 0,
           (index) => EqubMember(
@@ -55,6 +92,34 @@ class Equb {
         hasPaidForCurrentCycle: false,
       ),
     );
+
+    // 🔥 Add dummy payout history for demonstration purposes if not present in data
+    List<PayoutHistoryEntry> dummyPayoutHistory = [];
+    if (data['payoutHistory'] != null) {
+      // Assuming payoutHistory in data is a List<Map<String, dynamic>>
+      for (var entryMap in data['payoutHistory']) {
+        dummyPayoutHistory.add(PayoutHistoryEntry(
+          recipientName: entryMap['recipientName'],
+          cycleDate: DateFormat('MMMM dd,yyyy').parse(entryMap['cycleDate']),
+          amount: (entryMap['amount'] as num).toDouble(),
+        ));
+      }
+    } else {
+      // Create some fake history for demonstration on new Equbs
+      // This part will only run if data['payoutHistory'] is null
+      final now = DateTime.now();
+      if (data['numberOfMembers'] > 0) {
+        // Simulate a few past payouts for older Equbs
+        for (int i = 1; i <= 2 && i <= data['numberOfMembers']; i++) {
+          dummyPayoutHistory.add(PayoutHistoryEntry(
+            recipientName: 'Member ${data['numberOfMembers'] - i + 1}', // Fake recipients
+            cycleDate: now.subtract(Duration(days: 30 * i)), // A month ago, two months ago etc.
+            amount: (data['numberOfMembers'] as int) * (data['contributionAmount'] as num).toDouble(),
+          ));
+        }
+      }
+    }
+
 
     return Equb(
       id: data['id'] ?? '',
@@ -68,6 +133,7 @@ class Equb {
       nextPaymentDate: parsedNextPaymentDate,
       equbPaymentStatus: (data['paymentStatus'] == 'Paid') ? 'Paid' : 'Pending',
       members: generatedMembers,
+      payoutHistory: dummyPayoutHistory, // Pass the parsed or generated history
     );
   }
 
@@ -83,27 +149,43 @@ class Equb {
   }
 
   void calculateNextPaymentDate() {
-    if (frequency == 'ወራዊ') {
-      nextPaymentDate = DateTime(nextPaymentDate.year, nextPaymentDate.month + 1, nextPaymentDate.day);
-      if (nextPaymentDate.day != startDate.day) {
-        int targetDay = startDate.day;
-        int newMonth = nextPaymentDate.month;
+    int originalDay = startDate.day;
+
+    switch (frequency.toLowerCase()) {
+      case 'daily':
+        nextPaymentDate = nextPaymentDate.add(const Duration(days: 1));
+        break;
+      case 'weekly':
+        nextPaymentDate = nextPaymentDate.add(const Duration(days: 7));
+        break;
+      case 'bi-weekly':
+        nextPaymentDate = nextPaymentDate.add(const Duration(days: 14));
+        break;
+      case 'monthly':
+        int newMonth = nextPaymentDate.month + 1;
         int newYear = nextPaymentDate.year;
-        while (true) {
-          try {
-            nextPaymentDate = DateTime(newYear, newMonth, targetDay);
-            break;
-          } catch (e) {
-            targetDay--;
-            if (targetDay <= 0) {
-              nextPaymentDate = DateTime(newYear, newMonth + 1, 0);
-              break;
-            }
-          }
+
+        if (newMonth > 12) {
+          newMonth = 1;
+          newYear++;
         }
-      }
-    } else if (frequency == 'ሳምንታዊ') {
-      nextPaymentDate = nextPaymentDate.add(const Duration(days: 7));
+
+        final int lastDayOfNextMonth = DateTime(newYear, newMonth + 1, 0).day;
+        int targetDay = min(originalDay, lastDayOfNextMonth);
+
+        nextPaymentDate = DateTime(newYear, newMonth, targetDay);
+        break;
+      default:
+        int newMonth = nextPaymentDate.month + 1;
+        int newYear = nextPaymentDate.year;
+        if (newMonth > 12) {
+          newMonth = 1;
+          newYear++;
+        }
+        final int lastDayOfNextMonth = DateTime(newYear, newMonth + 1, 0).day;
+        int targetDay = min(originalDay, lastDayOfNextMonth);
+        nextPaymentDate = DateTime(newYear, newMonth, targetDay);
+        break;
     }
   }
 
@@ -118,18 +200,4 @@ class Equb {
     }
     equbPaymentStatus = 'Pending';
   }
-}
-
-class EqubMember {
-  final String id;
-  final String name;
-  bool hasPaidForCurrentCycle;
-  final List<DateTime> paymentHistory;
-
-  EqubMember({
-    required this.id,
-    required this.name,
-    this.hasPaidForCurrentCycle = false,
-    List<DateTime>? paymentHistory,
-  }) : paymentHistory = paymentHistory ?? [];
 }

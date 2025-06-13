@@ -6,7 +6,6 @@ import '../models/equb.dart'; // Ensure this import is present
 import '../notifier/user_notifier.dart';
 
 class JoinedEqubDetailScreen extends StatefulWidget {
-  // 🔥 FIX 1: Change the parameter type from Map<String, dynamic> to Equb
   final Equb equbData;
 
   const JoinedEqubDetailScreen({super.key, required this.equbData});
@@ -41,6 +40,18 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
         context,
         'You have already paid for this cycle!',
         backgroundColor: Colors.blue,
+      );
+      return;
+    }
+
+    final double requiredAmount = currentEqub.contributionAmount;
+    final double? userBalance = (userNotifier.user?['balance'] as num?)?.toDouble();
+
+    if (userBalance == null || userBalance < requiredAmount) {
+      _showPaymentConfirmationSnackbar(
+        context,
+        'Insufficient balance! You need ${requiredAmount.toStringAsFixed(2)} Birr to pay.',
+        backgroundColor: Colors.red,
       );
       return;
     }
@@ -99,7 +110,7 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           content: Text(
-            'You are confirming a payment of ${currentEqub.contributionAmount} Birr for the "${currentEqub.name}" Equb. This action cannot be undone. Are you sure?',
+            'You are confirming a payment of ${currentEqub.contributionAmount.toStringAsFixed(2)} Birr for the "${currentEqub.name}" Equb. This action cannot be undone. Are you sure?',
             style: Theme.of(ctx).textTheme.bodyLarge,
           ),
           actions: <Widget>[
@@ -120,8 +131,17 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
       );
 
       if (confirmed == true) {
-        // 3. Process Payment if confirmed
-        _processPayment(userNotifier, currentEqub.id, currentUserMember.id);
+        final bool deductionSuccess = userNotifier.deductUserBalance(requiredAmount);
+
+        if (deductionSuccess) {
+          _processPayment(userNotifier, currentEqub.id, currentUserMember.id);
+        } else {
+          _showPaymentConfirmationSnackbar(
+            context,
+            'Payment failed: Balance became insufficient during processing. Please deposit more funds.',
+            backgroundColor: Colors.red,
+          );
+        }
       } else {
         _showPaymentConfirmationSnackbar(
           context,
@@ -139,22 +159,16 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
   }
 
   void _processPayment(UserNotifier userNotifier, String equbId, String currentUserMemberId) {
-    // Mark current user as paid in the global state
     userNotifier.updateMemberPaymentStatus(equbId, currentUserMemberId, true);
     _showPaymentConfirmationSnackbar(context, 'Payment recorded successfully!');
 
-    // Simulate other members' payments through the notifier
     userNotifier.simulateOtherMembersPayments(equbId);
 
-    // After all payments (current user + simulated others) are recorded,
-    // check if the cycle is complete.
     final updatedEqub = userNotifier.findJoinedEqub(equbId);
     if (updatedEqub != null && updatedEqub.allMembersPaidForCurrentCycle()) {
       _showPayoutNotification(userNotifier, updatedEqub);
-      userNotifier.processEqubCycleCompletion(equbId); // This handles rotation and next payment date
+      userNotifier.processEqubCycleCompletion(equbId);
     }
-
-    // UserNotifier's methods will call notifyListeners, which rebuilds the UI.
   }
 
   void _showPayoutNotification(UserNotifier userNotifier, Equb currentEqub) {
@@ -194,29 +208,23 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Consumer for real-time updates from UserNotifier
     return Consumer<UserNotifier>(
       builder: (context, userNotifier, child) {
-        // 🔥 FIX 2: Access currentEqub.id directly (since equbData is now Equb)
-        // This 'currentEqub' is the one from the UserNotifier's state,
-        // which might have been updated (e.g., payment status).
         final Equb? currentEqub = userNotifier.findJoinedEqub(widget.equbData.id);
         final EqubMember? currentUserMember = userNotifier.getLoggedInUserMemberForEqub(
           widget.equbData.id,
         );
 
         if (currentEqub == null || currentUserMember == null) {
-          // This should ideally not happen if the Equb is correctly passed and user logged in
           return Scaffold(
             appBar: AppBar(title: const Text('Equb Detail')),
             body: const Center(child: Text('Equb or user data not found.')),
           );
         }
 
-        // Access Equb properties using dot notation
         final String name = currentEqub.name;
         final String description = currentEqub.description;
-        final String contributionAmount = currentEqub.contributionAmount.toString();
+        final String contributionAmount = currentEqub.contributionAmount.toStringAsFixed(2);
         final String frequency = currentEqub.frequency;
         final String numberOfMembers = currentEqub.numberOfMembers.toString();
         final String startDate = DateFormat('MMMM dd,yyyy').format(currentEqub.startDate);
@@ -226,6 +234,13 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
         final String currentRecipientName = currentEqub.members.isEmpty
             ? 'N/A'
             : currentEqub.members[currentEqub.currentPayoutRecipientIndex].name;
+
+        // Calculate the total payout amount
+        final double totalPayoutAmount = currentEqub.numberOfMembers * currentEqub.contributionAmount;
+        final String formattedTotalPayoutAmount = NumberFormat.currency(locale: 'en_US', symbol: 'Birr').format(totalPayoutAmount);
+
+        final List<PayoutHistoryEntry> payoutHistory = currentEqub.payoutHistory;
+
 
         return Scaffold(
           appBar: AppBar(
@@ -266,6 +281,14 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
                     _buildDetailRow(context, Icons.attach_money, 'Contribution', '$contributionAmount Birr'),
                     _buildDetailRow(context, Icons.event_repeat, 'Frequency', frequency),
                     _buildDetailRow(context, Icons.group, 'Members', numberOfMembers),
+                    // 🔥 NEW: Display total payout amount
+                    _buildDetailRow(
+                      context,
+                      Icons.trending_up, // Or a suitable icon like Icons.savings
+                      'Total Payout when You Win',
+                      formattedTotalPayoutAmount,
+                      valueColor: Colors.green[700], // Highlight the win amount
+                    ),
                     _buildDetailRow(context, Icons.calendar_today, 'Start Date', startDate),
                     _buildDetailRow(context, Icons.timelapse, 'Duration', '$durationInMonths months'),
                     _buildDetailRow(context, Icons.next_plan, 'Next Payment', nextPaymentDate),
@@ -346,6 +369,62 @@ class _JoinedEqubDetailScreenState extends State<JoinedEqubDetailScreen> {
                     ),
                   )).toList(),
                 ),
+                const SizedBox(height: 30),
+                _buildDetailSectionTitle(context, 'Payout History', Icons.history),
+                const SizedBox(height: 10),
+                if (payoutHistory.isEmpty)
+                  _buildDetailCard(
+                    context,
+                    [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'No past payouts yet. Be the first to contribute!',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  _buildDetailCard(
+                    context,
+                    payoutHistory.reversed.map((entry) => Padding( // Display in reverse chronological order
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Recipient: ${entry.recipientName}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Date: ${DateFormat('MMM dd, yyyy').format(entry.cycleDate)}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              Text(
+                                '${NumberFormat.currency(locale: 'en_US', symbol: 'Birr').format(entry.amount)}',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (payoutHistory.indexOf(entry) < payoutHistory.length -1) // Add a divider if not the last item
+                            Divider(color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5), height: 15),
+                        ],
+                      ),
+                    )).toList(),
+                  ),
               ],
             ),
           ),

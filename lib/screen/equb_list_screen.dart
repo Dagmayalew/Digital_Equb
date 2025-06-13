@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:updated_digital_equb_new/models/equb.dart'; // Ensure this import is correct
 import '../notifier/user_notifier.dart';
 import '../utils/json_loader.dart';
 import 'equb_detail_screen.dart'; // Make sure this screen expects Map<String, dynamic> or Equb consistently

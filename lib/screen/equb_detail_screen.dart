@@ -1,6 +1,6 @@
 // lib/screen/equb_detail_screen.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; // Import for NumberFormat
 import 'package:provider/provider.dart';
 
 import '../models/equb.dart'; // Import your Equb model
@@ -27,6 +27,10 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
 
     // Check if the user has already joined this equb
     final bool isJoined = userNotifier.joinedEqubs.any((equb) => equb.id == currentEqub.id);
+
+    // 🔥 NEW: Calculate the total payout amount
+    final double totalPayoutAmount = currentEqub.numberOfMembers * currentEqub.contributionAmount;
+    final String formattedTotalPayoutAmount = NumberFormat.currency(locale: 'en_US', symbol: 'Birr').format(totalPayoutAmount);
 
     return Scaffold(
       appBar: AppBar(
@@ -64,10 +68,18 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
             _buildDetailCard(
               context,
               [
-                _buildDetailRow(context, Icons.attach_money, 'Contribution', '${currentEqub.contributionAmount} Birr'),
+                _buildDetailRow(context, Icons.attach_money, 'Contribution', '${currentEqub.contributionAmount.toStringAsFixed(2)} Birr'),
+                // 🔥 NEW: Display total payout amount here
+                _buildDetailRow(
+                  context,
+                  Icons.wallet_giftcard, // Changed icon to signify winning amount
+                  'Total Payout (When you win)',
+                  formattedTotalPayoutAmount,
+                  valueColor: Colors.green[700], // Highlight the potential winning amount
+                ),
                 _buildDetailRow(context, Icons.event_repeat, 'Frequency', currentEqub.frequency),
                 _buildDetailRow(context, Icons.group, 'Members', '${currentEqub.numberOfMembers}'),
-                _buildDetailRow(context, Icons.calendar_today, 'Start Date', DateFormat('MMMM dd, yyyy').format(currentEqub.startDate)),
+                _buildDetailRow(context, Icons.calendar_today, 'Start Date', DateFormat('MMMM dd,yyyy').format(currentEqub.startDate)),
                 _buildDetailRow(context, Icons.timelapse, 'Duration', '${currentEqub.durationInMonths} months'),
               ],
             ),
@@ -94,10 +106,8 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
                 onPressed: isJoined // Disable if already joined
                     ? null
                     : () {
-                  // Call the joinEqub method from UserNotifier
                   userNotifier.joinEqub(currentEqub);
 
-                  // Optionally show a confirmation message
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('You have joined ${currentEqub.name}!'),
@@ -105,8 +115,6 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
                     ),
                   );
 
-                  // Navigate to the JoinedEqubDetailScreen after joining
-                  // Pass the actual Equb object, as JoinedEqubDetailScreen now expects it
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
