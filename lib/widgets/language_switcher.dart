@@ -1,4 +1,3 @@
-// lib/widgets/language_switcher.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../notifier/locale_notifier.dart';
@@ -14,9 +13,10 @@ class LanguageSwitcher extends StatelessWidget {
       child: DropdownButton<Locale>(
         value: localeNotifier.locale,
         icon: const Icon(Icons.language, color: Colors.white),
-        onChanged: (Locale? newLocale) {
-          if (newLocale != null) {
-            localeNotifier.setLocale(newLocale);
+        dropdownColor: Theme.of(context).primaryColor,
+        onChanged: (Locale? locale) {
+          if (locale != null) {
+            localeNotifier.setLocale(locale);
           }
         },
         items: const [
