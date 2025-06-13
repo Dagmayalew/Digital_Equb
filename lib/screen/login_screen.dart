@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; // Although not directly used for JSON parsing here, often useful for data manipulation.
+import 'dart:convert'; // Not directly used in this snippet, but often needed for JSON.
 import 'package:provider/provider.dart';
 
 import '../notifier/user_notifier.dart';
@@ -53,7 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final List<Map<String, dynamic>> users = await loadUsers();
 
-      // Use `where` and `cast` more safely, or ensure `loadUsers` returns correct type.
       final user = users.firstWhere(
             (u) =>
         (u['phone'] == input || u['email'] == input) &&
@@ -93,7 +92,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Welcome Back!"), // More inviting title
+        title: const Text(
+          "Welcome Back!", // More inviting title
+          style: TextStyle(fontWeight: FontWeight.bold), // Bold app bar title
+        ),
         centerTitle: true, // Center the app bar title
         elevation: 0, // Flat app bar for a modern look
         actions: [
@@ -101,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
             tooltip: "Toggle Theme",
             icon: Icon(
               isDarkMode ? Icons.wb_sunny : Icons.nightlight_round, // Updated icon
-              color: isDarkMode ? Colors.yellow : Colors.grey[700], // Themed icon color
+              color: isDarkMode ? Colors.amber : Colors.deepPurple, // Themed icon color for light/dark
             ),
             onPressed: themeNotifier.toggleTheme,
           ),
@@ -128,14 +130,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Theme.of(context).colorScheme.primary, // Use theme primary color
                     shadows: [ // Subtle shadow for depth
                       Shadow(
-                        blurRadius: 4.0,
-                        color: Colors.black.withOpacity(0.2),
-                        offset: const Offset(2.0, 2.0),
+                        blurRadius: 6.0, // Slightly more blur
+                        color: Colors.black.withOpacity(0.3), // Darker shadow
+                        offset: const Offset(3.0, 3.0), // More offset
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 48), // Increased spacing
+                const SizedBox(height: 60), // Increased spacing for visual breathing room
 
                 TextFormField(
                   controller: _phoneOrEmailController,
@@ -146,6 +148,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12), // Rounded corners
                     ),
+                    enabledBorder: OutlineInputBorder( // Define enabled border
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant, // Use theme outline color
+                        width: 1,
+                      ),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
@@ -154,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     filled: true, // Fill the background
-                    fillColor: Theme.of(context).inputDecorationTheme.fillColor ?? (isDarkMode ? Colors.grey[800] : Colors.grey[100]), // Themed fill color
+                    fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[50], // Consistent fill color
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -187,6 +196,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12), // Rounded corners
                     ),
+                    enabledBorder: OutlineInputBorder( // Define enabled border
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        width: 1,
+                      ),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
@@ -195,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     filled: true, // Fill the background
-                    fillColor: Theme.of(context).inputDecorationTheme.fillColor ?? (isDarkMode ? Colors.grey[800] : Colors.grey[100]),
+                    fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[50], // Consistent fill color
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -213,8 +229,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       _errorMessage,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error, // Use theme error color
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                        fontWeight: FontWeight.w600, // Slightly bolder error text
+                        fontSize: 15, // Slightly larger font
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -222,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16), // Larger padding
+                    padding: const EdgeInsets.symmetric(vertical: 18), // Larger padding for a more prominent button
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12), // Match input field borders
                     ),
@@ -237,27 +253,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading ? null : _login,
                   child: _isLoading
                       ? const SizedBox(
-                    width: 24, // Slightly larger loader
-                    height: 24,
+                    width: 28, // Larger loader
+                    height: 28,
                     child: CircularProgressIndicator(
                       color: Colors.white, // Ensure white on colored button
-                      strokeWidth: 2.5, // Thicker stroke
+                      strokeWidth: 3, // Thicker stroke
                     ),
                   )
                       : const Text("Login"),
                 ),
                 const SizedBox(height: 20), // Spacing for potential forgotten password or sign up links
-                // Optional: Add a "Forgot Password?" or "Sign Up" link here
                 TextButton(
                   onPressed: () {
-                    // Implement navigation to forgot password or sign up screen
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Forgot Password? (Not implemented)")),
+                      const SnackBar(content: Text("Forgot Password? Feature not yet implemented.")), // Clarified message
                     );
                   },
                   child: Text(
                     "Forgot Password?",
-                    style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary, // Themed color
+                      fontWeight: FontWeight.w600, // Slightly bolder
+                    ),
                   ),
                 ),
               ],

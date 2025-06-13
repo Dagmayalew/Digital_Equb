@@ -35,15 +35,15 @@ class MyApp extends StatelessWidget {
         HomeScreen.routeName: (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
           if (args is Map<String, dynamic>) {
-            // Set the user in UserNotifier upon successful login
+
             final userNotifier = Provider.of<UserNotifier>(context, listen: false);
             userNotifier.setUser(args);
             return const HomeScreen();
           } else {
-            return const LoginScreen(); // Fallback if no user data is passed
+            return const LoginScreen();
           }
         },
-        // MainScreen now directly accesses user data from UserNotifier
+
         MainScreen.routeName: (context) => const MainScreen(),
       },
       debugShowCheckedModeBanner: false,

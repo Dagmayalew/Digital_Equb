@@ -8,7 +8,6 @@ import '../notifier/user_notifier.dart';
 import 'joined_equb_detail_screen.dart'; // Import the joined detail screen
 
 class EqubDetailScreen extends StatefulWidget {
-  // It's currently expecting a Map<String, dynamic> from EqubListScreen
   final Map<String, dynamic> equbData;
 
   const EqubDetailScreen({super.key, required this.equbData});
@@ -28,13 +27,15 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
     // Check if the user has already joined this equb
     final bool isJoined = userNotifier.joinedEqubs.any((equb) => equb.id == currentEqub.id);
 
-    // 🔥 NEW: Calculate the total payout amount
     final double totalPayoutAmount = currentEqub.numberOfMembers * currentEqub.contributionAmount;
     final String formattedTotalPayoutAmount = NumberFormat.currency(locale: 'en_US', symbol: 'Birr').format(totalPayoutAmount);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Equb Details"),
+        title: const Text(
+          "Equb Details",
+          style: TextStyle(fontWeight: FontWeight.bold), // Make app bar title bold
+        ),
         centerTitle: true,
         elevation: 4,
       ),
@@ -43,52 +44,81 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
-              currentEqub.name,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
+            // Equb Name and Description Section
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.08), // Light background for this section
+                borderRadius: BorderRadius.circular(15),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              currentEqub.description,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    currentEqub.name,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    currentEqub.description,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 25),
+
+            // Divider for visual separation
             Divider(
               color: Theme.of(context).colorScheme.outlineVariant,
               thickness: 1.5,
             ),
             const SizedBox(height: 20),
-            _buildDetailSectionTitle(context, 'Equb Details', Icons.info_outline),
+
+            // Equb Details Section
+            _buildDetailSectionTitle(context, 'Equb Overview', Icons.info_outline), // More descriptive title
             const SizedBox(height: 10),
             _buildDetailCard(
               context,
               [
-                _buildDetailRow(context, Icons.attach_money, 'Contribution', '${currentEqub.contributionAmount.toStringAsFixed(2)} Birr'),
-                // 🔥 NEW: Display total payout amount here
                 _buildDetailRow(
                   context,
-                  Icons.wallet_giftcard, // Changed icon to signify winning amount
+                  Icons.monetization_on_outlined, // Updated icon
+                  'Contribution Amount', // More descriptive label
+                  '${currentEqub.contributionAmount.toStringAsFixed(2)} Birr',
+                  valueColor: Theme.of(context).colorScheme.tertiary, // Highlight contribution
+                ),
+                _buildDetailRow(
+                  context,
+                  Icons.trending_up,
                   'Total Payout (When you win)',
                   formattedTotalPayoutAmount,
                   valueColor: Colors.green[700], // Highlight the potential winning amount
                 ),
-                _buildDetailRow(context, Icons.event_repeat, 'Frequency', currentEqub.frequency),
-                _buildDetailRow(context, Icons.group, 'Members', '${currentEqub.numberOfMembers}'),
-                _buildDetailRow(context, Icons.calendar_today, 'Start Date', DateFormat('MMMM dd,yyyy').format(currentEqub.startDate)),
-                _buildDetailRow(context, Icons.timelapse, 'Duration', '${currentEqub.durationInMonths} months'),
+                _buildDetailRow(context, Icons.event_repeat, 'Payment Frequency', currentEqub.frequency), // More descriptive label
+                _buildDetailRow(context, Icons.group, 'Number of Members', '${currentEqub.numberOfMembers}'),
+                _buildDetailRow(
+                    context,
+                    Icons.calendar_month_outlined, // Updated icon
+                    'Start Date',
+                    DateFormat('MMMM dd, yyyy').format(currentEqub.startDate)
+                ),
+                _buildDetailRow(context, Icons.timelapse, 'Total Duration', '${currentEqub.durationInMonths} months'),
               ],
             ),
             const SizedBox(height: 40),
+
+            // Join Equb Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 icon: Icon(isJoined ? Icons.check_circle_outline : Icons.group_add),
-                label: Text(isJoined ? "Already Joined" : "Join Equb"),
+                label: Text(isJoined ? "You've Already Joined!" : "Join This Equb"), // More friendly label
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -103,18 +133,20 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
                   ),
                   elevation: 5,
                 ),
-                onPressed: isJoined // Disable if already joined
-                    ? null
+                onPressed: isJoined
+                    ? null // Disable button if already joined
                     : () {
                   userNotifier.joinEqub(currentEqub);
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('You have joined ${currentEqub.name}!'),
+                      content: Text('🎉 You have successfully joined ${currentEqub.name}!'), // More celebratory message
                       duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating, // Make it float
                     ),
                   );
 
+                  // Navigate to the JoinedEqubDetailScreen and remove this screen from stack
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -125,16 +157,18 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
               ),
             ),
             const SizedBox(height: 30),
-            _buildDetailSectionTitle(context, 'How it works', Icons.policy),
+
+            // How It Works Section
+            _buildDetailSectionTitle(context, 'How Equb Works', Icons.help_outline), // More descriptive title
             const SizedBox(height: 10),
             _buildDetailCard(
               context,
               [
                 _buildPolicyPoint('Each member contributes the agreed amount at the set frequency.', Icons.money),
-                _buildPolicyPoint('One member receives the total payout in each cycle.', Icons.person_add),
-                _buildPolicyPoint('The payout recipient rotates among members each cycle.', Icons.sync),
-                _buildPolicyPoint('All members are expected to pay their contributions on time.', Icons.timer),
-                _buildPolicyPoint('Payment status is tracked for transparency.', Icons.track_changes),
+                _buildPolicyPoint('One lucky member receives the full payout in each cycle.', Icons.emoji_events_outlined), // Updated icon
+                _buildPolicyPoint('The payout recipient rotates fairly among all members.', Icons.rotate_right_outlined), // Updated icon
+                _buildPolicyPoint('Timely payments ensure smooth operation for everyone.', Icons.check_circle_outline), // Updated icon
+                _buildPolicyPoint('Your payment status is transparently tracked within the Equb.', Icons.track_changes),
               ],
             ),
             const SizedBox(height: 20),
@@ -144,7 +178,7 @@ class _EqubDetailScreenState extends State<EqubDetailScreen> {
     );
   }
 
-  // --- Helper Widgets (No changes needed unless you want to style them) ---
+  // --- Helper Widgets ---
 
   Widget _buildDetailSectionTitle(BuildContext context, String title, IconData icon) {
     return Row(
